@@ -1,0 +1,12 @@
+{
+  "name": "gigu-copiloto-pro",
+  "version": "1.0.0",
+  "description": "GigU Copiloto Pro - Simulador e Painel Web da Auza Neural",
+  "scripts": {
+    "dev": "serve public",
+    "build": "echo 'Build complete'"
+  },
+  "devDependencies": {
+    "serve": "^14.2.4"
+  }
+}

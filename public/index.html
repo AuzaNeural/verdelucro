@@ -1,0 +1,579 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <title>GigU Copiloto Pro - Simulador Visual Oficial</title>
+  <script src="https://www.gstatic.com/antigravity/web/dev/tailwindcss.min.js"></script>
+  <style>
+    ::-webkit-scrollbar { width: 5px; }
+    ::-webkit-scrollbar-track { background: rgba(0,0,0,0.2); }
+    ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.2); border-radius: 3px; }
+    .phone-screen {
+      box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.85);
+    }
+  </style>
+</head>
+<body class="bg-[#0f1117] text-white antialiased p-2 m-0 font-sans">
+
+  <div class="max-w-6xl mx-auto space-y-4">
+    <!-- Top Bar Navigation -->
+    <div class="flex flex-wrap items-center justify-between gap-3 pb-3 border-b border-gray-800">
+      <div class="flex items-center gap-2">
+        <span class="inline-block w-3 h-3 rounded-full bg-emerald-500 animate-pulse"></span>
+        <h1 class="text-base font-bold text-white">GigU Copiloto Pro — Auza Neural</h1>
+        <span class="text-xs px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">Fiel às Imagens do App</span>
+      </div>
+
+      <!-- Tab Switcher -->
+      <div class="flex items-center bg-[#181a20] p-1 rounded-xl border border-gray-800 text-xs">
+        <button onclick="setTab('dashboard')" id="btn-tab-dashboard" class="px-3 py-1.5 rounded-lg font-medium transition text-gray-400 hover:text-white">
+          1. App Principal
+        </button>
+        <button onclick="setTab('overlay')" id="btn-tab-overlay" class="px-3 py-1.5 rounded-lg font-medium transition bg-emerald-500 text-black font-bold">
+          2. Semáforo Flutuante (Imagem 1 & 2)
+        </button>
+        <button onclick="setTab('history')" id="btn-tab-history" class="px-3 py-1.5 rounded-lg font-medium transition text-gray-400 hover:text-white">
+          3. Histórico do Dia (Imagem 5)
+        </button>
+        <button onclick="setTab('settings')" id="btn-tab-settings" class="px-3 py-1.5 rounded-lg font-medium transition text-gray-400 hover:text-white">
+          4. Cálculo de Ganhos & Ajustes (Imagem 3, 4 & 6)
+        </button>
+      </div>
+    </div>
+
+    <!-- Main Content Area: Phone Preview + Live Controls Side-by-Side -->
+    <div class="grid grid-cols-1 md:grid-cols-12 gap-5 items-start">
+      
+      <!-- Left Column: Smartphone Shell (Preview) -->
+      <div class="md:col-span-5 flex justify-center">
+        <div class="w-[340px] h-[670px] bg-[#0c0e12] border-[6px] border-[#222630] rounded-[42px] p-2 flex flex-col relative overflow-hidden phone-screen">
+          <!-- Top Phone Speaker / Camera Notch -->
+          <div class="w-full flex justify-center items-center py-1 z-30">
+            <div class="w-24 h-4 bg-[#222630] rounded-full flex items-center justify-end pr-2">
+              <div class="w-2.5 h-2.5 rounded-full bg-[#12141a]"></div>
+            </div>
+          </div>
+
+          <!-- Status Bar -->
+          <div class="flex justify-between items-center px-4 py-1 text-[10px] text-gray-400 font-mono z-30">
+            <span>06:46</span>
+            <div class="flex items-center gap-1.5">
+              <span id="recording-pill" class="hidden text-rose-400 font-bold animate-pulse">🔴 REC</span>
+              <span>5G</span>
+              <span>🔋 78%</span>
+            </div>
+          </div>
+
+          <!-- Phone Inner Content Container -->
+          <div id="phone-viewport" class="flex-1 overflow-y-auto px-2.5 py-2 space-y-3 relative rounded-b-[32px]">
+            <!-- Rendered dynamically by JavaScript -->
+          </div>
+        </div>
+      </div>
+
+      <!-- Right Column: Interactive Real-time Controls -->
+      <div class="md:col-span-7 space-y-4">
+        
+        <!-- Live Calculation Box -->
+        <div class="bg-[#181a20] border border-gray-800 rounded-2xl p-4 space-y-3">
+          <div class="flex items-center justify-between">
+            <h2 class="text-sm font-semibold text-white flex items-center gap-2">
+              <span id="light-badge" class="w-3.5 h-3.5 rounded-full bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.7)]"></span>
+              Resultado da Avaliação Instantânea
+            </h2>
+            <div class="flex gap-2">
+              <button onclick="toggleCameraRecording()" id="btn-camera-toggle" class="flex items-center gap-1 text-xs px-2.5 py-1 rounded-lg bg-rose-500/15 text-rose-400 hover:bg-rose-500/25 border border-rose-500/30 transition">
+                📹 Câmera Discreta
+              </button>
+              <button onclick="playVoiceNotification()" class="flex items-center gap-1 text-xs px-2.5 py-1 rounded-lg bg-emerald-500/15 text-emerald-400 hover:bg-emerald-500/25 border border-emerald-500/30 transition">
+                🔊 Ouvir Voz
+              </button>
+            </div>
+          </div>
+
+          <!-- Metrics Grid (As 4 Colunas Exatas da Imagem 1) -->
+          <div class="grid grid-cols-4 gap-2 text-center">
+            <div class="bg-[#12141a] p-2 rounded-xl border border-gray-800">
+              <div class="text-[10px] text-gray-400">R$/km</div>
+              <div id="metric-rate-km" class="text-base font-bold text-emerald-400">2,25</div>
+              <div class="text-[9px] text-gray-400">Bom: &gt; 2,35</div>
+            </div>
+            <div class="bg-[#12141a] p-2 rounded-xl border border-gray-800">
+              <div class="text-[10px] text-gray-400">R$/hora</div>
+              <div id="metric-rate-hr" class="text-base font-bold text-sky-400">48,77</div>
+              <div class="text-[9px] text-gray-400">Bom: &gt; 45,00</div>
+            </div>
+            <div class="bg-[#12141a] p-2 rounded-xl border border-gray-800">
+              <div class="text-[10px] text-gray-400">Lucro</div>
+              <div id="metric-net-profit" class="text-base font-bold text-emerald-400">18,90</div>
+              <div class="text-[9px] text-gray-400">limpo</div>
+            </div>
+            <div class="bg-[#12141a] p-2 rounded-xl border border-gray-800">
+              <div class="text-[10px] text-gray-400">Lucro %</div>
+              <div id="metric-profit-percent" class="text-base font-bold text-emerald-400">75%</div>
+              <div class="text-[9px] text-emerald-500">margem</div>
+            </div>
+          </div>
+
+          <div id="verdict-banner" class="p-2.5 rounded-xl text-xs font-semibold bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">
+            🟢 Corrida Boa: Excelente remuneração por hora e margem líquida alta.
+          </div>
+        </div>
+
+        <!-- Simulator Quick Controls -->
+        <div class="bg-[#181a20] border border-gray-800 rounded-2xl p-4 space-y-3">
+          <div class="flex items-center justify-between">
+            <h3 class="text-xs font-semibold text-white uppercase tracking-wider">Cenários Prontos das Imagens</h3>
+            <div class="flex flex-wrap gap-1.5">
+              <button onclick="loadScenario('img1')" class="text-[11px] px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-400 hover:bg-emerald-500/30">🟢 Imagem 1 (Uber R$ 25,20)</button>
+              <button onclick="loadScenario('img2')" class="text-[11px] px-2 py-0.5 rounded bg-amber-500/20 text-amber-400 hover:bg-amber-500/30">🟡 Imagem 2 (99 Dinâmico x1.4)</button>
+              <button onclick="loadScenario('bad')" class="text-[11px] px-2 py-0.5 rounded bg-rose-500/20 text-rose-400 hover:bg-rose-500/30">🔴 Prejuízo (R$ 35,75 / 51m)</button>
+              <button onclick="loadScenario('risk')" class="text-[11px] px-2 py-0.5 rounded bg-purple-500/20 text-purple-300 hover:bg-purple-500/30">🟣 Área de Risco!</button>
+            </div>
+          </div>
+
+          <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs">
+            <div>
+              <label class="block text-gray-400 mb-1">Tarifa (R$)</label>
+              <input type="number" id="input-fare" step="0.5" value="25.20" oninput="recalculate()" class="w-full bg-[#12141a] border border-gray-700 rounded-lg px-2.5 py-1.5 font-mono text-white outline-none">
+            </div>
+            <div>
+              <label class="block text-gray-400 mb-1">Viagem (km)</label>
+              <input type="number" id="input-trip-km" step="0.1" value="9.8" oninput="recalculate()" class="w-full bg-[#12141a] border border-gray-700 rounded-lg px-2.5 py-1.5 font-mono text-white outline-none">
+            </div>
+            <div>
+              <label class="block text-gray-400 mb-1">Embarque (km)</label>
+              <input type="number" id="input-pickup-km" step="0.1" value="1.4" oninput="recalculate()" class="w-full bg-[#12141a] border border-gray-700 rounded-lg px-2.5 py-1.5 font-mono text-white outline-none">
+            </div>
+            <div>
+              <label class="block text-gray-400 mb-1">Tempo Total (min)</label>
+              <input type="number" id="input-time-min" step="1" value="31" oninput="recalculate()" class="w-full bg-[#12141a] border border-gray-700 rounded-lg px-2.5 py-1.5 font-mono text-white outline-none">
+            </div>
+          </div>
+
+          <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs pt-1">
+            <div>
+              <label class="block text-gray-400 mb-1">Plataforma</label>
+              <select id="select-platform" onchange="recalculate()" class="w-full bg-[#12141a] border border-gray-700 rounded-lg px-2.5 py-1.5 text-white outline-none">
+                <option value="Uber">Uber</option>
+                <option value="99">99</option>
+                <option value="iFood">iFood Entregas</option>
+                <option value="inDrive">inDrive</option>
+                <option value="KeeTa">KeeTa</option>
+                <option value="Urbano">Urbano Norte</option>
+              </select>
+            </div>
+            <div>
+              <label class="block text-gray-400 mb-1">Tarifa Dinâmica</label>
+              <input type="text" id="input-surge" value="" placeholder="ex: x1.4" oninput="recalculate()" class="w-full bg-[#12141a] border border-gray-700 rounded-lg px-2.5 py-1.5 text-white outline-none">
+            </div>
+            <div>
+              <label class="block text-gray-400 mb-1">Destino</label>
+              <input type="text" id="input-dest-address" value="Aeroporto de Congonhas, São Paulo" oninput="recalculate()" class="w-full bg-[#12141a] border border-gray-700 rounded-lg px-2.5 py-1.5 text-white outline-none">
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <script>
+    let activeTab = 'overlay';
+    let isRecording = false;
+
+    let state = {
+      platform: 'Uber',
+      fare: 25.20,
+      tripKm: 9.8,
+      pickupKm: 1.4,
+      timeMin: 31,
+      surge: '',
+      destAddress: 'Aeroporto de Congonhas, São Paulo',
+      pickupAddress: 'Av. Paulista, Bela Vista, São Paulo',
+      passengerRating: 4.91,
+      badKm: 1.85,
+      goodKm: 2.35,
+      badHour: 35.0,
+      goodHour: 45.0,
+      fuelCostKm: 0.56,
+      blacklistedAreas: ['paraisópolis', 'heliópolis', 'cracolândia', 'zona perigosa']
+    };
+
+    let calculated = {};
+
+    let giguHistory = [
+      { id: '1', platform: 'Uber', date: '5 de jun, 2026', fare: 35.75, km: 24.9, time: 51, rateKm: 1.44, rateHr: 42.06, color: 'RED', pickup: 'Rua Altos, Memorare', dest: 'Av. Prof. Camilo Filho 9797' },
+      { id: '2', platform: 'Uber', date: '5 de jun, 2026', fare: 87.98, km: 34.0, time: 80, rateKm: 2.59, rateHr: 65.99, color: 'GREEN', pickup: 'Av. das Américas, 5000 - Barra, RJ', dest: 'Aeroporto Internacional Galeão (GIG)' },
+      { id: '3', platform: '99', date: '5 de jun, 2026', fare: 24.50, km: 19.3, time: 31, rateKm: 1.27, rateHr: 47.42, color: 'YELLOW', pickup: 'Praça Senador Salgado Filho, RJ', dest: 'Av. Lúcio Costa, sn - Barra, RJ' }
+    ];
+
+    function toggleCameraRecording() {
+      isRecording = !isRecording;
+      const pill = document.getElementById('recording-pill');
+      const btn = document.getElementById('btn-camera-toggle');
+
+      if (isRecording) {
+        pill.classList.remove('hidden');
+        btn.innerHTML = '🔴 Parar Gravação';
+        btn.className = 'flex items-center gap-1 text-xs px-2.5 py-1 rounded-lg bg-rose-600 text-white font-bold transition animate-pulse';
+      } else {
+        pill.classList.add('hidden');
+        btn.innerHTML = '📹 Câmera Discreta';
+        btn.className = 'flex items-center gap-1 text-xs px-2.5 py-1 rounded-lg bg-rose-500/15 text-rose-400 hover:bg-rose-500/25 border border-rose-500/30 transition';
+      }
+      renderPhoneView();
+    }
+
+    function recalculate() {
+      state.fare = parseFloat(document.getElementById('input-fare').value) || 0;
+      state.tripKm = parseFloat(document.getElementById('input-trip-km').value) || 0;
+      state.pickupKm = parseFloat(document.getElementById('input-pickup-km').value) || 0;
+      state.timeMin = parseInt(document.getElementById('input-time-min').value) || 1;
+      state.platform = document.getElementById('select-platform').value;
+      state.surge = document.getElementById('input-surge').value;
+      state.destAddress = document.getElementById('input-dest-address').value;
+
+      const totalKm = state.tripKm + state.pickupKm || 1;
+      const totalCost = totalKm * state.fuelCostKm;
+      const netProfit = state.fare - totalCost;
+      const profitPercent = state.fare > 0 ? (netProfit / state.fare) * 100 : 0;
+      const ratePerKm = state.fare / totalKm;
+      const ratePerHour = (state.fare / state.timeMin) * 60;
+
+      const lowerDest = state.destAddress.toLowerCase();
+      let isRisk = false;
+      for (const area of state.blacklistedAreas) {
+        if (lowerDest.includes(area)) { isRisk = true; break; }
+      }
+
+      let color = 'RED';
+      if (isRisk) {
+        color = 'PURPLE_RISK';
+      } else if (netProfit <= 0 || ratePerKm < state.badKm || ratePerHour < state.badHour) {
+        color = 'RED';
+      } else if (ratePerKm >= state.goodKm && ratePerHour >= state.goodHour) {
+        color = 'GREEN';
+      } else {
+        color = 'YELLOW';
+      }
+
+      calculated = {
+        totalKm,
+        totalCost,
+        netProfit,
+        profitPercent,
+        ratePerKm,
+        ratePerHour,
+        isRisk,
+        color
+      };
+
+      document.getElementById('metric-rate-km').innerText = ratePerKm.toFixed(2).replace('.', ',');
+      document.getElementById('metric-rate-hr').innerText = ratePerHour.toFixed(2).replace('.', ',');
+      document.getElementById('metric-net-profit').innerText = netProfit.toFixed(2).replace('.', ',');
+      document.getElementById('metric-profit-percent').innerText = `${Math.round(profitPercent)}%`;
+
+      const badge = document.getElementById('light-badge');
+      const banner = document.getElementById('verdict-banner');
+
+      if (color === 'PURPLE_RISK') {
+        badge.className = 'w-3.5 h-3.5 rounded-full bg-purple-500 shadow-[0_0_10px_rgba(168,85,247,0.9)]';
+        banner.className = 'p-2.5 rounded-xl text-xs font-semibold bg-purple-500/20 text-purple-300 border border-purple-500/40';
+        banner.innerText = '⚠️ ALERTA DE SEGURANÇA: Destino coincide com área de risco cadastrada!';
+      } else if (color === 'GREEN') {
+        badge.className = 'w-3.5 h-3.5 rounded-full bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.7)]';
+        banner.className = 'p-2.5 rounded-xl text-xs font-semibold bg-emerald-500/20 text-emerald-300 border border-emerald-500/30';
+        banner.innerText = '🟢 Corrida Boa: Atende plenamente seus critérios com margem de lucro saudável.';
+      } else if (color === 'YELLOW') {
+        badge.className = 'w-3.5 h-3.5 rounded-full bg-amber-400 shadow-[0_0_8px_rgba(251,191,36,0.7)]';
+        banner.className = 'p-2.5 rounded-xl text-xs font-semibold bg-amber-500/20 text-amber-300 border border-amber-500/30';
+        banner.innerText = '🟡 Corrida Média: Fica na faixa intermediária da sua régua. Avalie o destino.';
+      } else {
+        badge.className = 'w-3.5 h-3.5 rounded-full bg-rose-500 shadow-[0_0_8px_rgba(244,63,94,0.7)]';
+        banner.className = 'p-2.5 rounded-xl text-xs font-semibold bg-rose-500/20 text-rose-300 border border-rose-500/30';
+        banner.innerText = '🔴 Corrida Ruim / Prejuízo: Abaixo da meta mínima estabelecida. Recomendado recusar.';
+      }
+
+      renderPhoneView();
+    }
+
+    function setTab(tab) {
+      activeTab = tab;
+      ['dashboard', 'overlay', 'history', 'settings'].forEach(t => {
+        const btn = document.getElementById(`btn-tab-${t}`);
+        if (t === tab) {
+          btn.className = 'px-3 py-1.5 rounded-lg font-medium transition bg-emerald-500 text-black font-bold';
+        } else {
+          btn.className = 'px-3 py-1.5 rounded-lg font-medium transition text-gray-400 hover:text-white';
+        }
+      });
+      renderPhoneView();
+    }
+
+    function loadScenario(type) {
+      if (type === 'img1') {
+        document.getElementById('select-platform').value = 'Uber';
+        document.getElementById('input-fare').value = 25.20;
+        document.getElementById('input-trip-km').value = 9.8;
+        document.getElementById('input-pickup-km').value = 1.4;
+        document.getElementById('input-time-min').value = 31;
+        document.getElementById('input-surge').value = '';
+        document.getElementById('input-dest-address').value = 'Aeroporto de Congonhas, São Paulo';
+        state.pickupAddress = 'Av. Paulista, Bela Vista, São Paulo';
+        state.passengerRating = 4.91;
+      } else if (type === 'img2') {
+        document.getElementById('select-platform').value = '99';
+        document.getElementById('input-fare').value = 11.00;
+        document.getElementById('input-trip-km').value = 3.8;
+        document.getElementById('input-pickup-km').value = 1.9;
+        document.getElementById('input-time-min').value = 16;
+        document.getElementById('input-surge').value = 'x1.4';
+        document.getElementById('input-dest-address').value = 'Colégio Lerote, Jóquei';
+        state.pickupAddress = 'Rua Dra. Alaíde Marques, Ininga';
+        state.passengerRating = 4.93;
+      } else if (type === 'bad') {
+        document.getElementById('select-platform').value = 'Uber';
+        document.getElementById('input-fare').value = 35.75;
+        document.getElementById('input-trip-km').value = 23.5;
+        document.getElementById('input-pickup-km').value = 1.4;
+        document.getElementById('input-time-min').value = 51;
+        document.getElementById('input-surge').value = '';
+        document.getElementById('input-dest-address').value = 'Av. Prof. Camilo Filho 9797';
+        state.pickupAddress = 'Rua Altos, Memorare';
+      } else if (type === 'risk') {
+        document.getElementById('select-platform').value = 'Uber';
+        document.getElementById('input-fare').value = 28.00;
+        document.getElementById('input-trip-km').value = 5.0;
+        document.getElementById('input-pickup-km').value = 1.0;
+        document.getElementById('input-time-min').value = 18;
+        document.getElementById('input-surge').value = '';
+        document.getElementById('input-dest-address').value = 'Comunidade Paraisópolis';
+      }
+      recalculate();
+    }
+
+    function playVoiceNotification() {
+      if (!('speechSynthesis' in window)) {
+        alert('Seu navegador não suporta síntese de voz.');
+        return;
+      }
+      window.speechSynthesis.cancel();
+      const colorWord = calculated.color === 'GREEN' ? 'Boa!' : calculated.color === 'YELLOW' ? 'Média.' : 'Ruim, prejuízo!';
+      const text = `${state.platform}. Valor: ${state.fare.toFixed(2)} reais. Distância: ${calculated.totalKm.toFixed(1)} quilômetros. ` +
+                   `Ganho por quilômetro: ${calculated.ratePerKm.toFixed(2)} reais. Lucro líquido: ${calculated.netProfit.toFixed(2)} reais, ${Math.round(calculated.profitPercent)} por cento. ${colorWord}`;
+      const utter = new SpeechSynthesisUtterance(text);
+      utter.lang = 'pt-BR';
+      utter.rate = 1.0;
+      window.speechSynthesis.speak(utter);
+    }
+
+    function renderPhoneView() {
+      const container = document.getElementById('phone-viewport');
+
+      if (activeTab === 'overlay') {
+        const borderColor = calculated.color === 'GREEN' ? 'border-[#00C853]' : calculated.color === 'YELLOW' ? 'border-[#FFD600]' : calculated.color === 'PURPLE_RISK' ? 'border-[#9C27B0]' : 'border-[#D50000]';
+        const barColor = calculated.color === 'GREEN' ? 'bg-[#00C853]' : calculated.color === 'YELLOW' ? 'bg-[#FFD600]' : calculated.color === 'PURPLE_RISK' ? 'bg-[#9C27B0]' : 'bg-[#D50000]';
+
+        const hours = Math.floor(state.timeMin / 60);
+        const mins = state.timeMin % 60;
+        const durationFormatted = `${hours}h${mins < 10 ? '0' : ''}${mins}m`;
+
+        container.innerHTML = `
+          <div class="absolute inset-0 bg-[#e5e9ec] flex flex-col justify-between p-3 rounded-b-[32px] overflow-hidden">
+            <svg class="absolute inset-0 w-full h-full opacity-40 pointer-events-none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M-20,120 Q150,100 200,280 T350,480" fill="none" stroke="#2563eb" stroke-width="7"/>
+              <path d="M60,-10 L130,620" fill="none" stroke="#94a3b8" stroke-width="4"/>
+              <path d="M-10,390 L350,310" fill="none" stroke="#cbd5e1" stroke-width="5"/>
+            </svg>
+
+            <!-- GIGU OVERLAY CARD (FIEL À IMAGEM 1) -->
+            <div class="z-20 bg-white text-black p-3 rounded-2xl shadow-xl border-[3px] ${borderColor} transition-all">
+              <div class="grid grid-cols-4 gap-1 text-left pb-1.5 border-b border-gray-100">
+                <div>
+                  <div class="text-[9px] text-gray-500 font-medium">R$/km</div>
+                  <div class="flex items-center gap-1 mt-0.5">
+                    <span class="w-[3px] h-3.5 rounded-sm ${barColor}"></span>
+                    <span class="text-sm font-black font-mono">${calculated.ratePerKm.toFixed(2).replace('.', ',')}</span>
+                  </div>
+                </div>
+                <div>
+                  <div class="text-[9px] text-gray-500 font-medium">R$/hora</div>
+                  <div class="flex items-center gap-1 mt-0.5">
+                    <span class="w-[3px] h-3.5 rounded-sm ${barColor}"></span>
+                    <span class="text-sm font-black font-mono">${calculated.ratePerHour.toFixed(2).replace('.', ',')}</span>
+                  </div>
+                </div>
+                <div>
+                  <div class="text-[9px] text-gray-500 font-medium">Lucro</div>
+                  <div class="flex items-center gap-1 mt-0.5">
+                    <span class="w-[3px] h-3.5 rounded-sm ${barColor}"></span>
+                    <span class="text-sm font-black font-mono">${calculated.netProfit.toFixed(2).replace('.', ',')}</span>
+                  </div>
+                </div>
+                <div>
+                  <div class="text-[9px] text-gray-500 font-medium">Lucro %</div>
+                  <div class="flex items-center gap-1 mt-0.5">
+                    <span class="w-[3px] h-3.5 rounded-sm ${barColor}"></span>
+                    <span class="text-sm font-black font-mono">${Math.round(calculated.profitPercent)}%</span>
+                  </div>
+                </div>
+              </div>
+
+              <div class="flex justify-between items-center pt-2 text-[10px]">
+                <div class="flex items-center gap-1.5 font-bold text-gray-800">
+                  <span class="bg-black text-white text-[9px] px-1.5 py-0.2 rounded font-black">${state.platform}</span>
+                  <span>${durationFormatted} • ${calculated.totalKm.toFixed(1).replace('.', ',')}km</span>
+                  ${state.surge ? `<span class="bg-amber-100 text-amber-700 text-[9px] px-1 rounded font-bold">⚡ ${state.surge}</span>` : ''}
+                </div>
+                <div class="flex gap-2 text-[10px]">
+                  <span onclick="playVoiceNotification()" class="cursor-pointer text-emerald-600 font-bold hover:underline">🔊</span>
+                  <span onclick="toggleCameraRecording()" class="cursor-pointer ${isRecording ? 'text-rose-600 font-black animate-pulse' : 'text-gray-500'}">📹</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="z-10 bg-white p-3.5 rounded-2xl shadow-2xl border border-gray-200 text-black space-y-2">
+              <div class="flex justify-between items-center">
+                <span class="text-xl font-black">R$ ${state.fare.toFixed(2).replace('.', ',')}</span>
+                <span class="text-xs bg-gray-100 px-2 py-0.5 rounded font-bold">★ ${state.passengerRating}</span>
+              </div>
+              <div class="text-[10px] text-gray-600 border-t border-gray-100 pt-1 space-y-1">
+                <div>📍 5 min (1,4 km) • ${state.pickupAddress}</div>
+                <div>🏁 26 min (9,8 km) • ${state.destAddress}</div>
+              </div>
+              <div class="w-full py-2 text-center bg-blue-600 text-white font-bold text-xs rounded-xl shadow mt-1">
+                Aceitar
+              </div>
+            </div>
+          </div>
+        `;
+      } else if (activeTab === 'history') {
+        container.innerHTML = `
+          <div class="space-y-3 pt-1 text-gray-900">
+            <div class="flex items-center justify-between pb-1 border-b border-gray-800">
+              <h2 class="text-sm font-bold text-white">Histórico do Plantão</h2>
+              <span class="text-xs text-emerald-400 font-mono font-bold">3 Corridas</span>
+            </div>
+
+            <div class="space-y-2.5">
+              ${giguHistory.map(item => `
+                <div class="bg-white p-3 rounded-2xl shadow-sm border border-gray-200 text-black space-y-1.5">
+                  <div class="flex justify-between items-center">
+                    <div class="flex items-center gap-1.5">
+                      <span class="${item.platform === '99' ? 'bg-[#FFEB3B] text-black' : 'bg-black text-white'} text-[9px] px-1.5 py-0.5 rounded font-bold">
+                        ${item.platform}
+                      </span>
+                      <span class="text-[11px] text-gray-500 font-medium">${item.date}</span>
+                    </div>
+                    <div class="flex gap-3 text-right">
+                      <div>
+                        <div class="text-[9px] text-gray-400">R$/km</div>
+                        <div class="text-xs font-bold font-mono">${item.rateKm.toFixed(2).replace('.', ',')}</div>
+                      </div>
+                      <div>
+                        <div class="text-[9px] text-gray-400">R$/hr</div>
+                        <div class="text-xs font-bold font-mono">${item.rateHr.toFixed(2).replace('.', ',')}</div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div class="text-xl font-black">R$ ${item.fare.toFixed(2).replace('.', ',')}</div>
+
+                  <div class="w-full h-1 rounded-full ${item.color === 'GREEN' ? 'bg-[#00C853]' : item.color === 'YELLOW' ? 'bg-[#FFD600]' : 'bg-[#D50000]'}"></div>
+
+                  <div class="text-[11px] font-semibold text-gray-700 pt-0.5">
+                    — ${item.km.toFixed(1).replace('.', ',')} km  — ${item.time} min
+                  </div>
+
+                  <div class="text-[10px] text-gray-500 space-y-0.5 pt-0.5">
+                    <div class="truncate">📍 ${item.pickup}</div>
+                    <div class="truncate font-medium text-gray-800">🏁 ${item.dest}</div>
+                  </div>
+                </div>
+              `).join('')}
+            </div>
+          </div>
+        `;
+      } else if (activeTab === 'settings') {
+        container.innerHTML = `
+          <div class="space-y-3 pt-1 text-gray-200 text-[11px]">
+            <div class="flex items-center justify-between pb-1 border-b border-gray-800">
+              <h2 class="text-sm font-bold text-white">Cálculo de Ganhos</h2>
+              <button onclick="setTab('overlay')" class="text-xs text-emerald-400">Voltar</button>
+            </div>
+
+            <div class="bg-white text-black p-3 rounded-2xl shadow-sm space-y-1.5">
+              <div class="text-[10px] text-gray-500 font-bold flex items-center gap-1">
+                <span>📈</span> Meta de Lucro Mensal
+              </div>
+              <div class="text-xs">
+                <span class="text-emerald-600 font-bold">R$ 10.833</span> - <span class="text-rose-600 font-bold">R$ 2.879</span> =
+              </div>
+              <div class="flex justify-between items-center">
+                <div class="text-lg font-black text-black">R$ 7.954 <span class="text-xs font-normal text-gray-500">(73,4%)</span></div>
+                <button class="text-[10px] px-2 py-0.5 bg-orange-500 text-white font-bold rounded">Editar</button>
+              </div>
+            </div>
+
+            <div class="bg-white text-black p-3 rounded-2xl shadow-sm space-y-2">
+              <div class="text-xs font-bold text-gray-900">$ Ganho por Km</div>
+              <div class="flex justify-between text-[10px] font-bold">
+                <span class="text-rose-600">👎 Ruim: R$ ${state.badKm.toFixed(2)}</span>
+                <span class="text-emerald-600">👍 Bom: R$ ${state.goodKm.toFixed(2)}</span>
+              </div>
+              <div class="w-full h-2 rounded-full bg-gradient-to-r from-red-500 via-yellow-400 to-green-500"></div>
+
+              <div class="text-xs font-bold text-gray-900 pt-1">$ Ganho por Hora</div>
+              <div class="flex justify-between text-[10px] font-bold">
+                <span class="text-rose-600">👎 Ruim: R$ ${state.badHour.toFixed(0)}/hr</span>
+                <span class="text-emerald-600">👍 Bom: R$ ${state.goodHour.toFixed(0)}/hr</span>
+              </div>
+              <div class="w-full h-2 rounded-full bg-gradient-to-r from-red-500 via-yellow-400 to-green-500"></div>
+            </div>
+
+            <div class="bg-[#181a20] p-3 rounded-2xl border border-gray-800 space-y-1.5 text-[10px]">
+              <div class="font-bold text-white text-[11px] mb-1">🔊 Resumo por Voz</div>
+              <div class="flex gap-1.5">
+                <span class="px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-400 font-bold">🟢 Boa ✓</span>
+                <span class="px-2 py-0.5 rounded bg-amber-500/20 text-amber-400 font-bold">🟡 Média ✓</span>
+                <span class="px-2 py-0.5 rounded bg-rose-500/20 text-rose-400 font-bold">🔴 Ruim ✓</span>
+              </div>
+            </div>
+          </div>
+        `;
+      } else {
+        container.innerHTML = `
+          <div class="space-y-3 pt-1 text-gray-200">
+            <div class="flex items-center justify-between pb-1 border-b border-gray-800">
+              <div>
+                <h2 class="text-sm font-bold text-emerald-400">GigU Copiloto Pro</h2>
+                <p class="text-[9px] text-gray-400">Monitorando 6 aplicativos</p>
+              </div>
+              <span class="px-2 py-0.5 rounded-full text-[9px] bg-emerald-500/20 text-emerald-300 font-medium">ATIVO</span>
+            </div>
+
+            <div class="bg-[#181a20] p-2.5 rounded-2xl border border-gray-800 space-y-1.5">
+              <div class="text-[10px] text-gray-400 font-medium">Aplicativos Conectados</div>
+              <div class="grid grid-cols-3 gap-1.5 text-center text-[10px] font-bold">
+                <div class="bg-black text-white p-1.5 rounded-xl border border-gray-800">Uber</div>
+                <div class="bg-yellow-400 text-black p-1.5 rounded-xl">99</div>
+                <div class="bg-red-600 text-white p-1.5 rounded-xl">iFood</div>
+                <div class="bg-lime-400 text-black p-1.5 rounded-xl">inDrive</div>
+                <div class="bg-yellow-300 text-black p-1.5 rounded-xl">KeeTa</div>
+                <div class="bg-emerald-900 text-white p-1.5 rounded-xl">Urbano</div>
+              </div>
+            </div>
+
+            <button onclick="setTab('overlay')" class="w-full py-2.5 rounded-xl bg-emerald-500 text-black font-bold text-xs shadow-lg">
+              Visualizar Semáforo na Tela da Uber
+            </button>
+          </div>
+        `;
+      }
+    }
+
+    recalculate();
+  </script>
+</body>
+</html>

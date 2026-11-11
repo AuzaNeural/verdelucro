@@ -130,3 +130,4 @@ SELECT
     SUM(time_minutes) AS total_minutes
 FROM public.rides
 GROUP BY user_id, DATE(created_at);
+

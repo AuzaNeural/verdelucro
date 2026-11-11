@@ -1,0 +1,7 @@
+<resources>
+    <string name="app_name">GigU Clone</string>
+    <string name="accessibility_service_description">Monitora chamadas de corrida em tempo real da Uber e 99 para calcular o semáforo de lucro e custo por km.</string>
+    <string name="channel_overlay_name">Serviço de Semáforo</string>
+    <string name="channel_overlay_desc">Mantém o cartão flutuante ativo durante corridas</string>
+</resources>
+

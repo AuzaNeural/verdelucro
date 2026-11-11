@@ -1,0 +1,7 @@
+<resources>
+    <style name="Theme.GigUClone" parent="android:Theme.Material.Light.NoActionBar">
+        <item name="android:statusBarColor">#121212</item>
+        <item name="android:windowBackground">#121212</item>
+    </style>
+</resources>
+
